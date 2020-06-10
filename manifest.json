@@ -2,14 +2,14 @@
     "name": "TabFlush",
     "version": "1.0",
     "description": "Flush those tabs!",
-    "permissions": ["activeTab", "storage", "declarativeContent"],
+    "permissions": ["activeTab", "storage", "declarativeContent", "tabs", "chrome://favicon/*"],
     "background": {
-      "scripts": ["background.js"],
-      "persistent": false
+      "scripts": ["background.js"]
     },
     "browser_action": {
       "default_popup": "popup.html"
     },
     "options_page": "options.html",
+    "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
     "manifest_version": 2
   }
