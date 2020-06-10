@@ -2,40 +2,62 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'unsafe-inline';
+'use-strict';
 
 // Show a list of all tabs in the same process as this one.
 function init() {
-	chrome.windows.getCurrent({populate: true}, function(currentWindow) {
-		chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
-			var current = currentWindow.tabs.filter(function(tab) {
-				return tab.active;
-			})[0];
+	//chrome.windows.getCurrent({populate: true}, function(currentWindow) {
+		// chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
+		// 	var current = currentWindow.tabs.filter(function(tab) {
+		// 		return tab.active;
+		// 	})[0];
 			
-			var outputDiv = document.getElementById("tab-list");
-			var titleDiv = document.getElementById("title");
-			titleDiv.innerHTML = "<b>Tabs!</b>";
+		//});
+	//});
+	buildUI();
+}
 
-			var ul = document.createElement('ul');
-			outputDiv.appendChild(ul);
-			displayAllTabs(ul);
-		});
-	});
+function buildUI() {
+	var outputDiv = document.getElementById("tab-list");
+	var titleDiv = document.getElementById("title");
+	titleDiv.innerHTML = "<b>Tabs!</b>";
+
+	while (outputDiv.lastElementChild) {
+		outputDiv.removeChild(outputDiv.lastElementChild);
+	}
+	var ul = document.createElement('ul');
+	outputDiv.appendChild(ul);
+	displayAllTabs(ul);
 }
 
 function removeTab(event) {
-	var tabId = +event.srcElement.id
+	var tabId = event.srcElement.id.split`,`.map(x=>+x)
 	try {
-		chrome.tabs.remove(tabId);
+		chrome.tabs.remove(tabId, function() {
+			buildUI();
+		});
 	} catch (e) {
 		alert(e);
 	}
 }
 
+function isValidUrl(urlStr) {
+	if (urlStr == undefined) { 
+		return false; 
+	}
+	try {
+		var url = new URL(urlStr);
+		return true;
+	} catch (e) {
+		return false;
+	}
+	return false;
+}
+
 function displayAllTabs(outputDiv) {
 	// Loop over all windows and their tabs
 	var tabs = [];
-	// chrome.windows.getAll({ populate: true }, function(windowList) {
+	
 	chrome.windows.getCurrent({ populate: true }, function(currentWindow) {
 		for (var j = 0; j < currentWindow.tabs.length; j++) {
 			var tab = currentWindow.tabs[j];
@@ -45,27 +67,32 @@ function displayAllTabs(outputDiv) {
 		}
 
 		var dict = {}
+		var grouped = []
 
-		tabs.forEach(function(tab) {
-			let url = new URL(tab.url);
+		tabs.filter(tab => isValidUrl(tab.url)).forEach(function(tab) {
+			var url = new URL(tab.url);
 			if (dict[url.origin] == undefined) {
 				dict[url.origin] = {
 					"url": url,
-					"tabs": [] 
+					"tabs": [],
+					"tabIds": [] 
 				}
+				grouped.push(dict[url.origin])
 			}
 			dict[url.origin]["tabs"].push(tab)
+			dict[url.origin]["tabIds"].push(tab.id)
 		});
-
+		// sort
+		grouped.sort((a, b) => (a.tabIds.length > b.tabIds.length) ? -1 : 1)
 		// Display tab in list if it is in the same process
-		tabs.forEach(function(tab) {
-			displayTabInfo(tab, outputDiv);
+		grouped.forEach(function(value) {
+			displayTabInfo(value["tabs"][0], value["tabIds"], value["url"].origin, outputDiv);
 		});
 	});
 }
 
 // Print a link to a given tab
-function displayTabInfo(tab, outputDiv) {
+function displayTabInfo(tab, tabIds, origin, outputDiv) {
 
 	
 	var li = document.createElement('li');
@@ -76,17 +103,16 @@ function displayTabInfo(tab, outputDiv) {
 	}
 	
 
-	li.appendChild(document.createTextNode(tab.title))
-
-	let url = new URL(tab.url);
+	// li.appendChild(document.createTextNode(tab.title))
 
 	// li.appendChild(document.createTextNode("pinned: "+ tab.pinned))
-	li.appendChild(document.createTextNode(url.origin))
+	li.appendChild(document.createTextNode("("+tabIds.length+") "+ origin +" "))
 
 
 	var button = document.createElement('button');
-	button.id = tab.id
-	button.appendChild(document.createTextNode("Close"))
+	button.id = tabIds
+	// button.appendChild(document.createTextNode("Close"))
+	button.innerHTML = "Close"
 	button.addEventListener('click', removeTab)
 	li.appendChild(button);
 
