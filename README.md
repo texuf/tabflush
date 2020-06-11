@@ -1,0 +1,1 @@
+tabs doc here: https://developer.chrome.com/extensions/tabs
