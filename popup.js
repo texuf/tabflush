@@ -96,17 +96,15 @@ function displayTabInfo(tab, tabIds, origin, outputDiv) {
 
 	
 	var li = document.createElement('li');
-	if (tab.favIconUrl != undefined) {
-		var img = document.createElement('img');
-		img.src = "chrome://favicon/" + tab.url
-		li.appendChild(img)
-	}
+	var img = document.createElement('img');
+	img.src = "chrome://favicon/" + tab.url
+	li.appendChild(img)
 	
 
 	// li.appendChild(document.createTextNode(tab.title))
 
 	// li.appendChild(document.createTextNode("pinned: "+ tab.pinned))
-	li.appendChild(document.createTextNode("("+tabIds.length+") "+ origin +" "))
+	li.appendChild(document.createTextNode(" ("+tabIds.length+") "+ origin +" "))
 
 
 	var button = document.createElement('button');
