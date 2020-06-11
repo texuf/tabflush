@@ -14,14 +14,23 @@ function init() {
 			
 		//});
 	//});
+	var titleDiv = document.getElementById("title");
+	titleDiv.innerHTML = "<b>Tabs!</b>";
+
+	chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+		buildUI();
+	});
+	chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+		buildUI();
+	});
+	chrome.tabs.onCreated.addListener(function (tab) {
+		buildUI();
+	});
 	buildUI();
 }
 
 function buildUI() {
 	var outputDiv = document.getElementById("tab-list");
-	var titleDiv = document.getElementById("title");
-	titleDiv.innerHTML = "<b>Tabs!</b>";
-
 	while (outputDiv.lastElementChild) {
 		outputDiv.removeChild(outputDiv.lastElementChild);
 	}
@@ -30,11 +39,22 @@ function buildUI() {
 	displayAllTabs(ul);
 }
 
-function removeTab(event) {
-	var tabId = event.srcElement.id.split`,`.map(x=>+x)
+function removeTabs(event) {
+	var tabIds = event.srcElement.id.split`,`.map(x=>+x)
 	try {
-		chrome.tabs.remove(tabId, function() {
-			buildUI();
+		chrome.tabs.remove(tabIds, function() {
+			// buildUI();
+		});
+	} catch (e) {
+		alert(e);
+	}
+}
+
+function groupTabs(event) {
+	var tabIds = event.srcElement.id.split`,`.map(x=>+x)
+	try {
+		chrome.tabs.move(tabIds, {"index": -1}, function(tabs) {
+			// buildUI();
 		});
 	} catch (e) {
 		alert(e);
@@ -100,36 +120,24 @@ function displayTabInfo(tab, tabIds, origin, outputDiv) {
 	img.src = "chrome://favicon/" + tab.url
 	li.appendChild(img)
 	
-
-	// li.appendChild(document.createTextNode(tab.title))
-
-	// li.appendChild(document.createTextNode("pinned: "+ tab.pinned))
 	li.appendChild(document.createTextNode(" ("+tabIds.length+") "+ origin +" "))
 
 
-	var button = document.createElement('button');
-	button.id = tabIds
-	// button.appendChild(document.createTextNode("Close"))
-	button.innerHTML = "Close"
-	button.addEventListener('click', removeTab)
-	li.appendChild(button);
+	var groupButton = document.createElement('button');
+	groupButton.id = tabIds
+	groupButton.innerHTML = "->"
+	groupButton.addEventListener('click', groupTabs)
+	li.appendChild(groupButton);
+
+
+	var closeButton = document.createElement('button');
+	closeButton.id = tabIds
+	closeButton.innerHTML = "Close"
+	closeButton.addEventListener('click', removeTabs)
+	li.appendChild(closeButton);
 
 
 	outputDiv.appendChild(li)
-	// outputDiv.innerHTML +=
-	//   "<b><a href='#' onclick='showTab(window, " + tab.id +
-	//   ")'>" + tab.title + "</a></b><br>\n" +
-	//   "<i>" + tab.url + "</i><br>\n" + 
-	//   "<button onclick=\"removeTab(" + tab.id + ");\">Close Tab</button>"
-	//   ;
-}
-
-// Bring the selected tab to the front
-function showTab(origWindow, windowId, tabId) {
-	// TODO: Bring the window to the front.  (See http://crbug.com/31434)
-	//chrome.windows.update(windowId, {focused: true});
-	chrome.tabs.update(tabId, { selected: true });
-	origWindow.close();
 }
 
 // Kick things off.
