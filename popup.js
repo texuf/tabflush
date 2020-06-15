@@ -6,14 +6,6 @@
 
 // Show a list of all tabs in the same process as this one.
 function init() {
-	//chrome.windows.getCurrent({populate: true}, function(currentWindow) {
-		// chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
-		// 	var current = currentWindow.tabs.filter(function(tab) {
-		// 		return tab.active;
-		// 	})[0];
-			
-		//});
-	//});
 	var titleDiv = document.getElementById("title");
 	titleDiv.innerHTML = "<b>Tabs!</b>";
 
@@ -43,7 +35,6 @@ function removeTabs(event) {
 	var tabIds = event.srcElement.id.split`,`.map(x=>+x)
 	try {
 		chrome.tabs.remove(tabIds, function() {
-			// buildUI();
 		});
 	} catch (e) {
 		alert(e);
@@ -54,7 +45,6 @@ function groupTabs(event) {
 	var tabIds = event.srcElement.id.split`,`.map(x=>+x)
 	try {
 		chrome.tabs.move(tabIds, {"index": -1}, function(tabs) {
-			// buildUI();
 		});
 	} catch (e) {
 		alert(e);
