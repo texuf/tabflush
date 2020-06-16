@@ -1,6 +1,6 @@
 # Tab Flush
 
-Got too many tabs? 🚽 them.
+Got too many Chrome tabs? 🚽 them.
 
 ![Screenshot](/docs/images/screenshot.png?raw=true "ScreenShot")
 
